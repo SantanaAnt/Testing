@@ -1,0 +1,47 @@
+import googlemaps
+import json
+import pprint
+import pandas as pd
+import time
+
+
+# Define the API Key.
+API_KEY = 'AIzaSyCdqA1xCaMzFKiSUiTLtndUwC93shMfrvU'
+
+# Define the Client
+gmaps = googlemaps.Client(key = API_KEY)
+
+# Do a simple nearby search where we specify the location
+# in lat/lon format, along with a radius measured in meters
+places_result  = gmaps.places_nearby(location='34.6916696,-79.2013681', radius = 40000, open_now =False , type = 'restaurant')
+
+time.sleep(3)
+
+place_result  = gmaps.places_nearby(page_token = places_result['next_page_token'])
+
+stored_results = []
+
+# loop through each of the places in the results, and get the place details.      
+for place in places_result['results']:
+
+    # define the place id, needed to get place details. Formatted as a string.
+    my_place_id = place['place_id']
+
+    # define the fields you would liked return. Formatted as a list.
+    my_fields = ['name','formatted_phone_number','website', 'rating', 'adr_address']
+
+    # make a request for the details.
+    places_details  = gmaps.place(place_id= my_place_id , fields= my_fields)
+
+    # print the results of the details, returned as a dictionary.
+    pprint.pprint(places_details['result'])
+
+    #----------------------------------------------------------------------------
+
+data = pd.DataFrame({'Name': {"name"}}, {'Phone': {"formatted_phone_number"}})
+
+datatoexcel = pd.ExcelWriter("FromResults.xlsx",engine = 'xlsxwriter')
+
+data.to_excel(datatoexcel, sheet_name='Sheet1')
+
+datatoexcel.save()
